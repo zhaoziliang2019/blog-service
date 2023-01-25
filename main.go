@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"github.com/gin-gonic/gin"
 	"github.com/natefinch/lumberjack"
 	"github.com/zhaoziliang2019/blog-service/global"
 	"github.com/zhaoziliang2019/blog-service/internal/model"
@@ -11,7 +13,10 @@ import (
 	"github.com/zhaoziliang2019/blog-service/pkg/tracer"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -53,6 +58,7 @@ func init() {
 //@description Go 编程之旅：一起用 GO做项目
 //@termsOfService https://github.com/zhaoziliang2019/blog-service
 func main() {
+	gin.SetMode(global.ServerSetting.RunMode)
 	router := routers.NewRouter()
 	s := &http.Server{
 		Addr:           ":" + global.ServerSetting.HttpPort,
@@ -61,10 +67,25 @@ func main() {
 		WriteTimeout:   global.ServerSetting.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
 	}
-	err := s.ListenAndServe()
-	if err != nil {
-		return
+	//优雅停止
+	go func() {
+		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("s.ListenAndServe err:%v", err)
+		}
+	}()
+	//等待中断信号
+	quit := make(chan os.Signal)
+	//接收syscall.SIGINT和syscall.SIGTERM信号
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("shuting down server...")
+	//最大时间控制，通知该服务端它有5s的时间来处理原有的请求
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
 	}
+	log.Println("server exiting")
 }
 func setupSetting() error {
 	setting, err := setting.NewSetting(strings.Split(config, ",")...)

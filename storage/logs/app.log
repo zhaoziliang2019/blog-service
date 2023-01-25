@@ -1,0 +1,4 @@
+2023/01/24 16:54:55 {"callers":["D:/code/goproject/src/blog-service/main.go:24 main.init.0"],"level":"error","message":"app.BindAndValid errs:[State必须是[0 1]中的一个]","time":1674550495781133100}
+2023/01/25 10:14:07 {"callers":["D:/code/goproject/src/blog-service/main.go:24 main.init.0"],"level":"error","message":"svc.UploadFile err:file suffix is not supported.","time":1674612847716249600}
+2023/01/25 11:41:31 {"callers":["D:/code/goproject/src/blog-service/main.go:24 main.init.0"],"level":"error","message":"svc.UploadFile err:file suffix is not supported.","time":1674618091445716000}
+2023/01/25 11:41:31 {"callers":["D:/code/goproject/src/blog-service/main.go:24 main.init.0"],"level":"ingo","message":"access log:method:POST,status_code:500,begin_time:1674618091,end_time:1674618091","request":"type=1","response":"{\"code\":20030001,\"detail\":[\"file suffix is not supported.\"],\"msg\":\"上传文件失败\"}","time":1674618091445716000}
